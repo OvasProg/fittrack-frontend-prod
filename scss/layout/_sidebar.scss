@@ -207,9 +207,13 @@
       }
 
       &__avatar {
+         width: 96px;
+         height: 96px;
+         flex: 0 0 96px;
+
          img {
-            width: 96px;
-            height: 96px;
+            width: 100%;
+            height: 100%;
          }
       }
 
@@ -280,9 +284,13 @@
       }
 
       &__avatar {
+         width: 88px;
+         height: 88px;
+         flex: 0 0 88px;
+
          img {
-            width: 88px;
-            height: 88px;
+            width: 100%;
+            height: 100%;
          }
       }
 
