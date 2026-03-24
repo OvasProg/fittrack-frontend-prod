@@ -188,35 +188,19 @@ function createSetRow(exercise, setNumber) {
             ${setNumber}
          </span>
 
-         <div class="exercise-card__counter">
-            <button
-               type="button"
-               class="exercise-card__counter-btn"
-               data-action="decrease-weight"
+         <div class="exercise-card__weight-field">
+            <input
+               type="number"
+               min="0"
+               step="0.1"
+               inputmode="decimal"
+               class="exercise-card__weight-input"
+               data-role="weight-input"
                data-exercise-id="${exercise.id}"
                data-set-number="${setNumber}"
+               value="${stateItem?.weight_used ?? 0}"
+               placeholder="0"
             >
-               −
-            </button>
-
-            <span
-               class="exercise-card__counter-value"
-               data-role="weight-value"
-               data-exercise-id="${exercise.id}"
-               data-set-number="${setNumber}"
-            >
-               ${stateItem?.weight_used ?? 0}
-            </span>
-
-            <button
-               type="button"
-               class="exercise-card__counter-btn"
-               data-action="increase-weight"
-               data-exercise-id="${exercise.id}"
-               data-set-number="${setNumber}"
-            >
-               +
-            </button>
          </div>
 
          <div class="exercise-card__counter">
@@ -258,6 +242,7 @@ function bindWorkoutDetailsEvents() {
    if (!container || container.dataset.bound === "true") return;
 
    container.addEventListener("click", handleWorkoutPageClick);
+   container.addEventListener("input", handleWorkoutPageInput);
    container.dataset.bound = "true";
 }
 
@@ -279,6 +264,26 @@ async function handleWorkoutPageClick(event) {
    if (actionButton) {
       handleCounterAction(actionButton);
    }
+}
+
+function handleWorkoutPageInput(event) {
+   const weightInput = event.target.closest('[data-role="weight-input"]');
+   if (!weightInput) return;
+
+   const exerciseId = Number(weightInput.dataset.exerciseId);
+   const setNumber = Number(weightInput.dataset.setNumber);
+
+   const stateItem = getSetState(exerciseId, setNumber);
+   if (!stateItem) return;
+
+   const value = parseFloat(weightInput.value);
+
+   if (Number.isNaN(value) || value < 0) {
+      stateItem.weight_used = 0;
+      return;
+   }
+
+   stateItem.weight_used = value;
 }
 
 async function handleStartWorkout(button) {

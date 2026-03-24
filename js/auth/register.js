@@ -38,7 +38,7 @@ async function handleRegisterSubmit(event) {
       console.error("Registration error:", error);
 
       if (error.status === 422) {
-         showFormMessage("registerMessage", "Validation error. Check entered data.");
+         showFormMessage("An account with this email already exists.");
       } else {
          showFormMessage("registerMessage", "Something went wrong. Please try again.");
       }
