@@ -381,14 +381,6 @@ function handleCounterAction(button) {
    const stateItem = getSetState(exerciseId, setNumber);
    if (!stateItem) return;
 
-   if (action === "increase-weight") {
-      stateItem.weight_used += 1;
-   }
-
-   if (action === "decrease-weight") {
-      stateItem.weight_used = Math.max(0, stateItem.weight_used - 1);
-   }
-
    if (action === "increase-reps") {
       stateItem.reps_completed += 1;
    }
@@ -412,16 +404,16 @@ function updateSetRowUI(exerciseId, setNumber) {
    const stateItem = getSetState(exerciseId, setNumber);
    if (!stateItem) return;
 
-   const weightElement = document.querySelector(
-      `[data-role="weight-value"][data-exercise-id="${exerciseId}"][data-set-number="${setNumber}"]`
+   const weightInput = document.querySelector(
+      `[data-role="weight-input"][data-exercise-id="${exerciseId}"][data-set-number="${setNumber}"]`
    );
 
    const repsElement = document.querySelector(
       `[data-role="reps-value"][data-exercise-id="${exerciseId}"][data-set-number="${setNumber}"]`
    );
 
-   if (weightElement) {
-      weightElement.textContent = stateItem.weight_used;
+   if (weightInput) {
+      weightInput.value = stateItem.weight_used;
    }
 
    if (repsElement) {
