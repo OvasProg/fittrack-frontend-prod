@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", initLoginPage);
 
 async function initLoginPage() {
-   await redirectIfAuthenticated("/dashboard.html");
+   const authenticatedUser = await redirectIfAuthenticated("/dashboard.html");
+   if (authenticatedUser) return;
 
    const form = document.getElementById("loginForm");
    const googleButton = document.getElementById("googleLoginButton");
@@ -32,7 +33,13 @@ async function handleLoginSubmit(event) {
 
    try {
       await loginUser(payload);
-      window.location.href = "/dashboard.html";
+
+      const user = await checkAuthUser();
+      const redirectTo = user && needsBiometrics(user)
+         ? "/biometric.html"
+         : "/dashboard.html";
+
+      window.location.href = redirectTo;
    } catch (error) {
       console.error("Login error:", error);
 
@@ -53,6 +60,8 @@ async function handleGoogleLogin(event) {
    setButtonLoading(button, true, "Redirecting...");
 
    try {
+      sessionStorage.setItem("googleAuthIntent", "login");
+
       const response = await getGoogleAuthUrl();
       const url = response?.url;
 

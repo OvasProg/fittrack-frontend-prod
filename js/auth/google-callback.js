@@ -19,13 +19,37 @@ async function initGoogleCallbackPage() {
 
    try {
       await completeGoogleAuth(code);
+
+      const user = await checkAuthUser();
+      const intent = sessionStorage.getItem("googleAuthIntent");
+
+      sessionStorage.removeItem("googleAuthIntent");
+
+      if (!user) {
+         throw new Error("Authenticated user was not returned.");
+      }
+
+      console.log("Google auth user:", user);
+      console.log("Google auth intent:", intent);
+      console.log("needsBiometrics:", needsBiometrics(user));
+
+      if (intent === "register") {
+         window.location.href = "/biometric.html";
+         return;
+      }
+
+      if (needsBiometrics(user)) {
+         window.location.href = "/biometric.html";
+         return;
+      }
+
       window.location.href = "/dashboard.html";
    } catch (error) {
       console.error("Google callback error:", error);
 
       if (messageElement) {
          messageElement.textContent =
-            error?.data?.message || "Failed to complete Google authentication.";
+            error?.data?.message || error.message || "Failed to complete Google authentication.";
       }
 
       setTimeout(() => {

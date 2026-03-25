@@ -4,6 +4,11 @@ async function initBiometricPage() {
    const user = await requireAuth("/login.html");
    if (!user) return;
 
+   if (!needsBiometrics(user)) {
+      window.location.replace("/dashboard.html");
+      return;
+   }
+
    const form = document.getElementById("setupForm");
 
    if (!form) return;
@@ -243,7 +248,6 @@ async function initBiometricPage() {
          setTimeout(() => {
             window.location.href = "/dashboard.html";
          }, 1000);
-
       } catch (error) {
          console.error("Onboarding error:", error);
 
@@ -255,10 +259,15 @@ async function initBiometricPage() {
       } finally {
          if (submitButton) {
             submitButton.disabled = false;
-            submitButton.textContent = submitButton.dataset.defaultText || "Save";
+            buttonTextRestore(submitButton, "Save");
          }
       }
    });
 
    updateStepsView();
+}
+
+function buttonTextRestore(button, fallbackText) {
+   if (!button) return;
+   button.textContent = button.dataset.defaultText || fallbackText;
 }

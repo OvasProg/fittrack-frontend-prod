@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", initRegisterPage);
 
 async function initRegisterPage() {
-   await redirectIfAuthenticated("/dashboard.html");
+   const authenticatedUser = await redirectIfAuthenticated("/dashboard.html");
+   if (authenticatedUser) return;
 
    const form = document.getElementById("registerForm");
    const googleButton = document.getElementById("googleRegisterButton");
@@ -38,7 +39,7 @@ async function handleRegisterSubmit(event) {
       console.error("Registration error:", error);
 
       if (error.status === 422) {
-         showFormMessage("An account with this email already exists.");
+         showFormMessage("registerMessage", "An account with this email already exists.");
       } else {
          showFormMessage("registerMessage", "Something went wrong. Please try again.");
       }
@@ -54,6 +55,8 @@ async function handleGoogleRegister(event) {
    setButtonLoading(button, true, "Redirecting...");
 
    try {
+      sessionStorage.setItem("googleAuthIntent", "register");
+
       const response = await getGoogleAuthUrl();
       const url = response?.url;
 
