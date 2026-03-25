@@ -28,10 +28,6 @@ async function loadSettingsData() {
       if (levelSelect) {
          levelSelect.value = biometrics.experience_level ?? "Beginner";
       }
-
-      setSelectedTrainingDays(
-         biometrics.schedule || biometrics.training_days || []
-      );
    } catch (error) {
       console.error("Failed to load settings data:", error);
    }
@@ -50,20 +46,6 @@ function bindSettingsEvents() {
    }
 }
 
-function getSelectedTrainingDays() {
-   return Array.from(
-      document.querySelectorAll('input[name="trainingDays"]:checked')
-   ).map((input) => input.value);
-}
-
-function setSelectedTrainingDays(days) {
-   const selectedDays = new Set(Array.isArray(days) ? days : []);
-
-   document.querySelectorAll('input[name="trainingDays"]').forEach((input) => {
-      input.checked = selectedDays.has(input.value);
-   });
-}
-
 async function handleSaveBiometrics(event) {
    event.preventDefault();
 
@@ -75,16 +57,7 @@ async function handleSaveBiometrics(event) {
 
    if (!form || !saveButton || !weightInput || !heightInput || !levelSelect) return;
 
-   const selectedTrainingDays = getSelectedTrainingDays();
-
-   if (!selectedTrainingDays.length) {
-      alert("Please select at least one training day.");
-      return;
-   }
-
-   const payload = {
-      schedule: selectedTrainingDays
-   };
+   const payload = {};
 
    if (weightInput.value !== "") {
       payload.weight = Number(weightInput.value);
@@ -96,6 +69,11 @@ async function handleSaveBiometrics(event) {
 
    if (levelSelect.value) {
       payload.experience_level = levelSelect.value;
+   }
+
+   if (!Object.keys(payload).length) {
+      alert("Nothing to update.");
+      return;
    }
 
    setBiometricsFormDisabled(true);
@@ -128,10 +106,6 @@ function setBiometricsFormDisabled(isDisabled) {
    if (heightInput) heightInput.disabled = isDisabled;
    if (levelSelect) levelSelect.disabled = isDisabled;
    if (saveButton) saveButton.disabled = isDisabled;
-
-   document.querySelectorAll('input[name="trainingDays"]').forEach((input) => {
-      input.disabled = isDisabled;
-   });
 }
 
 async function handleDeleteAccount() {
