@@ -52,18 +52,46 @@ async function requireAuth(redirectTo = "/registration.html") {
 
 async function redirectIfAuthenticated(redirectTo = "/dashboard.html") {
    try {
-      const user = await checkAuthUser();
+      const authUser = await checkAuthUser();
 
-      if (user) {
-         window.location.replace(getPostAuthRedirect(user, redirectTo));
-         return user;
+      if (!authUser) {
+         unlockPageAfterAuthCheck();
+         return null;
       }
 
-      unlockPageAfterAuthCheck();
-      return null;
+      const redirectPath = await getPostAuthRedirectPath(redirectTo);
+
+      window.location.replace(redirectPath || redirectTo);
+      return authUser;
    } catch (error) {
       console.error("Redirect auth check error:", error);
       unlockPageAfterAuthCheck();
       return null;
    }
+}
+
+async function getAuthorizedUserProfile() {
+   const authUser = await checkAuthUser();
+
+   if (!authUser) {
+      return null;
+   }
+
+   try {
+      const overview = await getDashboardOverview();
+      return overview?.user || authUser;
+   } catch (error) {
+      console.warn("Failed to load dashboard overview for profile completeness check:", error);
+      return authUser;
+   }
+}
+
+async function getPostAuthRedirectPath(fallbackRedirect = "/dashboard.html") {
+   const user = await getAuthorizedUserProfile();
+
+   if (!user) {
+      return null;
+   }
+
+   return needsBiometrics(user) ? "/biometric.html" : fallbackRedirect;
 }

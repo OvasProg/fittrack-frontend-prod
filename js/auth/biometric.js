@@ -1,10 +1,12 @@
 document.addEventListener("DOMContentLoaded", initBiometricPage);
 
 async function initBiometricPage() {
-   const user = await requireAuth("/login.html");
-   if (!user) return;
+   const authUser = await requireAuth("/login.html");
+   if (!authUser) return;
 
-   if (!needsBiometrics(user)) {
+   const user = await getAuthorizedUserProfile();
+
+   if (user && !needsBiometrics(user)) {
       window.location.replace("/dashboard.html");
       return;
    }

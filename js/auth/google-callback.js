@@ -20,7 +20,7 @@ async function initGoogleCallbackPage() {
    try {
       await completeGoogleAuth(code);
 
-      const user = await checkAuthUser();
+      const user = await getAuthorizedUserProfile();
       const intent = sessionStorage.getItem("googleAuthIntent");
 
       sessionStorage.removeItem("googleAuthIntent");
@@ -38,12 +38,8 @@ async function initGoogleCallbackPage() {
          return;
       }
 
-      if (needsBiometrics(user)) {
-         window.location.href = "/biometric.html";
-         return;
-      }
-
-      window.location.href = "/dashboard.html";
+      const redirectTo = await getPostAuthRedirectPath("/dashboard.html");
+      window.location.href = redirectTo || "/dashboard.html";
    } catch (error) {
       console.error("Google callback error:", error);
 

@@ -34,12 +34,8 @@ async function handleLoginSubmit(event) {
    try {
       await loginUser(payload);
 
-      const user = await checkAuthUser();
-      const redirectTo = user && needsBiometrics(user)
-         ? "/biometric.html"
-         : "/dashboard.html";
-
-      window.location.href = redirectTo;
+      const redirectTo = await getPostAuthRedirectPath("/dashboard.html");
+      window.location.href = redirectTo || "/dashboard.html";
    } catch (error) {
       console.error("Login error:", error);
 
