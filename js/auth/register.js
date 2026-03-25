@@ -34,7 +34,15 @@ async function handleRegisterSubmit(event) {
 
    try {
       await registerUser(payload);
-      window.location.href = "/biometric.html";
+
+      await loginUser({
+         email: payload.email,
+         password: payload.password,
+         remember: true
+      });
+
+      const redirectTo = await getPostAuthRedirectPath("/dashboard.html");
+      window.location.href = redirectTo || "/biometric.html";
    } catch (error) {
       console.error("Registration error:", error);
 

@@ -24,17 +24,59 @@ function needsBiometrics(user) {
    );
 }
 
-function getPostAuthRedirect(user, fallbackRedirect = "/dashboard.html") {
-   if (needsBiometrics(user)) {
-      return "/biometric.html";
+function sleep(ms) {
+   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForAuthenticatedUser(attempts = 8, delay = 250) {
+   for (let i = 0; i < attempts; i += 1) {
+      try {
+         const user = await checkAuthUser();
+
+         if (user) {
+            return user;
+         }
+      } catch (error) {
+         console.warn("waitForAuthenticatedUser attempt failed:", error);
+      }
+
+      if (i < attempts - 1) {
+         await sleep(delay);
+      }
    }
 
-   return fallbackRedirect;
+   return null;
+}
+
+async function getAuthorizedUserProfile() {
+   const authUser = await waitForAuthenticatedUser();
+
+   if (!authUser) {
+      return null;
+   }
+
+   try {
+      const overview = await getDashboardOverview();
+      return overview?.user || authUser;
+   } catch (error) {
+      console.warn("Failed to load dashboard overview for profile completeness check:", error);
+      return authUser;
+   }
+}
+
+async function getPostAuthRedirectPath(fallbackRedirect = "/dashboard.html") {
+   const user = await getAuthorizedUserProfile();
+
+   if (!user) {
+      return null;
+   }
+
+   return needsBiometrics(user) ? "/biometric.html" : fallbackRedirect;
 }
 
 async function requireAuth(redirectTo = "/registration.html") {
    try {
-      const user = await checkAuthUser();
+      const user = await waitForAuthenticatedUser();
 
       if (!user) {
          window.location.replace(redirectTo);
@@ -68,30 +110,4 @@ async function redirectIfAuthenticated(redirectTo = "/dashboard.html") {
       unlockPageAfterAuthCheck();
       return null;
    }
-}
-
-async function getAuthorizedUserProfile() {
-   const authUser = await checkAuthUser();
-
-   if (!authUser) {
-      return null;
-   }
-
-   try {
-      const overview = await getDashboardOverview();
-      return overview?.user || authUser;
-   } catch (error) {
-      console.warn("Failed to load dashboard overview for profile completeness check:", error);
-      return authUser;
-   }
-}
-
-async function getPostAuthRedirectPath(fallbackRedirect = "/dashboard.html") {
-   const user = await getAuthorizedUserProfile();
-
-   if (!user) {
-      return null;
-   }
-
-   return needsBiometrics(user) ? "/biometric.html" : fallbackRedirect;
 }
